@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/authRoutes');
+const examRoutes = require('./routes/examRoutes');
 const app = express();
 
 app.use(cors());
@@ -14,6 +15,7 @@ app.use(rateLimit({
 }));
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/exams', examRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World');
