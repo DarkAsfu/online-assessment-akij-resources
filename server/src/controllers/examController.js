@@ -139,8 +139,7 @@ exports.deleteExam = async (req, res, next) => {
 
 exports.getExamCandidates = async (req, res, next) => {
   try {
-    const exam = await Exam.findById(req.params.id);
-    
+    const exam = await Exam.findById(req.params.examId);
     if (!exam) {
       return res.status(404).json({
         success: false,
@@ -160,7 +159,9 @@ exports.getExamCandidates = async (req, res, next) => {
       status: { $in: ['submitted', 'auto-submitted'] }
     }).populate('candidate', 'name email');
     
-    const candidates = attempts.map(attempt => ({
+    const candidates = attempts
+      .filter((attempt) => attempt.candidate)
+      .map((attempt) => ({
       id: attempt.candidate._id,
       name: attempt.candidate.name,
       email: attempt.candidate.email,
@@ -187,13 +188,15 @@ exports.getAllCandidateExams = async (req, res, next) => {
     const now = new Date();
     
     const exams = await Exam.find({
-      status: 'published',
-      startTime: { $lte: now },
-      endTime: { $gte: now }
+      status: 'published'
     }).populate('questionSets');
     
     const examsWithStatus = await Promise.all(
       exams.map(async (exam) => {
+        const isUpcoming = now < exam.startTime;
+        const isOngoing = now >= exam.startTime && now <= exam.endTime;
+        const isEnded = now > exam.endTime;
+
         const existingAttempt = await ExamAttempt.findOne({
           exam: exam._id,
           candidate: req.user.id,
@@ -216,6 +219,10 @@ exports.getAllCandidateExams = async (req, res, next) => {
           isFull,
           hasTaken,
           isInProgress,
+          isUpcoming,
+          isOngoing,
+          isEnded,
+          canTakeNow: isOngoing && !isFull && !hasTaken,
           attemptId: existingAttempt?._id || null,
         };
       })
@@ -229,6 +236,43 @@ exports.getAllCandidateExams = async (req, res, next) => {
       success: true,
       count: availableExams.length,
       data: availableExams,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.publishExam = async (req, res, next) => {
+  try {
+    const exam = await Exam.findById(req.params.examId);
+    
+    if (!exam) {
+      return res.status(404).json({
+        success: false,
+        message: 'Exam not found'
+      });
+    }
+    
+    if (exam.employer.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+    
+    if (exam.questionSets.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot publish exam without question sets'
+      });
+    }
+    
+    exam.status = 'published';
+    await exam.save();
+    
+    res.status(200).json({
+      success: true,
+      data: exam
     });
   } catch (error) {
     next(error);

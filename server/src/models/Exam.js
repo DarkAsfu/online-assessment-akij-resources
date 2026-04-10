@@ -66,11 +66,10 @@ const examSchema = new mongoose.Schema(
   }
 );
 
-examSchema.pre('save', function (next) {
-  if (this.endTime <= this.startTime) {
-    next(new Error('End time must be after start time'));
+examSchema.pre('save', async function () {
+  if (this.startTime && this.endTime && this.endTime <= this.startTime) {
+    throw new Error('End time must be after start time');
   }
-  next();
 });
 
 const Exam = mongoose.model('Exam', examSchema);

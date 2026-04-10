@@ -62,10 +62,9 @@ const questionSetSchema = new mongoose.Schema(
   }
 );
 
-questionSetSchema.pre('save', function (next) {
+questionSetSchema.pre('save', async function () {
   this.totalQuestions = this.questions.length;
   this.totalPoints = this.questions.reduce((sum, q) => sum + q.points, 0);
-  next();
 });
 
 const QuestionSet = mongoose.model('QuestionSet', questionSetSchema);
