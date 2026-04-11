@@ -16,6 +16,11 @@ const examService = {
     return response.data
   },
 
+  getExamCandidates: async (examId) => {
+    const response = await api.get(`/exams/${examId}/candidates`)
+    return response.data
+  },
+
   updateExam: async (id, examData) => {
     const response = await api.put(`/exams/${id}`, examData)
     return response.data
