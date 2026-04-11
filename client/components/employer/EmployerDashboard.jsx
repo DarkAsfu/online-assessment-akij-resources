@@ -135,7 +135,7 @@ const EmployerDashboard = () => {
                                                 {exam.title}
                                             </h3>
 
-                                            <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]'>
+                                            <div className='flex flex-wrap justify-between items-center gap-x-7 gap-y-2 text-[14px]'>
                                                 <div className='flex items-center gap-2 text-primary'>
                                                     <Users size={18} className='text-[#94a3b8]' />
                                                     <span className='font-normal text-[#64748b]'>Candidates:</span>
@@ -144,15 +144,15 @@ const EmployerDashboard = () => {
 
                                                 <div className='flex items-center gap-2 text-primary'>
                                                     <FileText size={18} className='text-[#94a3b8]' />
-                                                    <span className='font-normal text-[#64748b]'>Slots:</span>
+                                                    <span className='font-normal text-[#64748b]'>Question Set:</span>
                                                     <span className='font-medium'>{exam.totalSlots || 'Not Set'}</span>
                                                 </div>
 
                                                 <div className='flex items-center gap-2 text-primary'>
                                                     <CircleGauge size={18} className='text-[#94a3b8]' />
-                                                    <span className='font-normal text-[#64748b]'>Status:</span>
+                                                    <span className='font-normal text-[#64748b]'>Exam Slots:</span>
                                                     <span className='font-medium'>
-                                                        {exam.status === 'published' ? 'Published' : 'Draft'}
+                                                        {exam.availableSlots ?? exam.totalSlots ?? 'Not Set'}
                                                     </span>
                                                 </div>
                                             </div>
