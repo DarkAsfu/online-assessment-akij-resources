@@ -29,6 +29,11 @@ const candidateExamService = {
     })
     return response.data
   },
+
+  getAttempt: async (attemptId) => {
+    const response = await api.get(`/candidate-exams/attempt/${attemptId}`)
+    return response.data
+  },
 }
 
 export default candidateExamService

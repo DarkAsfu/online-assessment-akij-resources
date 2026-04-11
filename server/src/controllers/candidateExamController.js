@@ -340,6 +340,38 @@ exports.trackBehavior = async (req, res, next) => {
   }
 };
 
+// @desc    Get attempt results
+// @route   GET /api/candidate-exams/attempt/:attemptId
+// @access  Private (Candidate only)
+exports.getAttempt = async (req, res, next) => {
+  try {
+    const attempt = await ExamAttempt.findById(req.params.attemptId)
+      .populate('exam')
+      .populate('candidate', 'name email');
+
+    if (!attempt) {
+      return res.status(404).json({
+        success: false,
+        message: 'Attempt not found',
+      });
+    }
+
+    if (attempt.candidate._id.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this attempt',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: attempt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Helper functions
 function calculateTimeRemaining(startTime, durationMinutes) {
   const elapsed = (new Date() - new Date(startTime)) / 1000 / 60;
