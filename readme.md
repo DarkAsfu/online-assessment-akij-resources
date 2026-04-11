@@ -7,7 +7,7 @@ A comprehensive online assessment platform that enables employers to create and 
 ## 🎯 Live Demo & Recording
 
 - **🌐 Live Demo**: [Add your live demo URL here]
-- **📹 Video Recording**: [Add your video recording URL here]
+- **📹 Video Recording**: [https://drive.google.com/drive/folders/1deqk9rQe-uDY0JF-OeZZsC9rNYCdEJS9?usp=sharing]
 
 ---
 
