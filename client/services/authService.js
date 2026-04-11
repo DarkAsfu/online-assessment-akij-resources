@@ -15,6 +15,14 @@ const authService = {
     const response = await api.get('/auth/me')
     return response.data
   },
+
+  logout: async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  },
 }
 
 export default authService
