@@ -5,6 +5,15 @@ const labelClass = 'mb-2 block text-[16px] font-medium text-primary'
 const inputClass =
   'h-14 w-full rounded-xl border border-[#d8dee8] bg-white px-4 text-[14px] text-[#334155] placeholder:text-[#94a3b8] focus:outline-none'
 
+const datetimeStyle = `
+  input::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    display: none !important;
+  }
+`
+
 const BasicInfoForm = ({ formData, onChange }) => {
   const handleInputChange = (event) => {
     const { name, value } = event.target
@@ -12,7 +21,9 @@ const BasicInfoForm = ({ formData, onChange }) => {
   }
 
   return (
-    <section className='rounded-2xl border border-[#eceff4] bg-white p-5 md:p-6 max-w-226.5 mx-auto'>
+    <>
+      <style>{datetimeStyle}</style>
+      <section className='rounded-2xl border border-[#eceff4] bg-white p-5 md:p-6 max-w-226.5 mx-auto'>
       <h2 className='mb-5 text-[20px] font-semibold leading-[1.3] text-primary'>
         Basic Information
       </h2>
@@ -47,7 +58,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
             <div className='relative'>
               <select
                 name='totalSlots'
-                className={inputClass}
+                className={`${inputClass} appearance-none`}
                 value={formData.totalSlots}
                 onChange={handleInputChange}
               >
@@ -58,7 +69,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
                 <option value='4'>4</option>
                 <option value='5'>5</option>
               </select>
-              <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
+              <ChevronDown className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
             </div>
           </div>
         </div>
@@ -69,7 +80,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
             <div className='relative'>
               <select
                 name='totalQuestionSet'
-                className={inputClass}
+                className={`${inputClass} appearance-none`}
                 value={formData.totalQuestionSet}
                 onChange={handleInputChange}
               >
@@ -79,7 +90,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
                 <option value='3'>3</option>
                 <option value='4'>4</option>
               </select>
-              <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
+              <ChevronDown className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
             </div>
           </div>
           <div>
@@ -87,7 +98,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
             <div className='relative'>
               <select
                 name='questionType'
-                className={inputClass}
+                className={`${inputClass} appearance-none`}
                 value={formData.questionType}
                 onChange={handleInputChange}
               >
@@ -97,7 +108,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
                 <option value='checkbox'>Checkbox (Multiple)</option>
                 <option value='text'>Text</option>
               </select>
-              <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
+              <ChevronDown className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
             </div>
           </div>
         </div>
@@ -114,7 +125,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
                 value={formData.startTime}
                 onChange={handleInputChange}
               />
-              <Clock3 className='absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
+              <Clock3 className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
             </div>
           </div>
           <div>
@@ -128,7 +139,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
                 value={formData.endTime}
                 onChange={handleInputChange}
               />
-              <Clock3 className='absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
+              <Clock3 className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
             </div>
           </div>
           <div>
@@ -146,6 +157,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
         </div>
       </div>
     </section>
+    </>
   )
 }
 

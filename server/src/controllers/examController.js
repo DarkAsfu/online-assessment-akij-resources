@@ -25,8 +25,10 @@ exports.getEmployerExams = async (req, res, next) => {
     
     const examsWithCounts = await Promise.all(
       exams.map(async (exam) => {
+        // Count candidates, excluding the employer's own attempts
         const currentCandidates = await ExamAttempt.countDocuments({ 
           exam: exam._id,
+          candidate: { $ne: req.user.id }, // Exclude employer's attempts
           status: { $in: ['in-progress', 'submitted', 'auto-submitted'] }
         });
         return {

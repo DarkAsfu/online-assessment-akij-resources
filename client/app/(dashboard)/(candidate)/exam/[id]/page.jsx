@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { CircleCheck } from 'lucide-react'
 import examService from '@/services/examService'
 import candidateExamService from '@/services/candidateExamService'
+import RichTextEditor from '@/components/common/RichTextEditor'
 
 const formatTime = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60)
@@ -13,7 +14,14 @@ const formatTime = (totalSeconds) => {
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} left`
 }
 
-const normalizeText = (value) => (value || '').trim().toLowerCase()
+const stripHtml = (value = '') =>
+    value
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+const normalizeText = (value) => stripHtml(value).toLowerCase()
 
 const arraysMatch = (a = [], b = []) => {
     if (!Array.isArray(a) || !Array.isArray(b)) return false
@@ -26,30 +34,8 @@ const arraysMatch = (a = [], b = []) => {
 
 const renderAnswerText = (answer) => {
     if (Array.isArray(answer)) return answer.length ? answer.join(', ') : 'Not Answered'
-    if (typeof answer === 'string') return answer.trim() ? answer : 'Not Answered'
+    if (typeof answer === 'string') return stripHtml(answer) || 'Not Answered'
     return answer || 'Not Answered'
-}
-
-const TextEditorPlaceholder = ({ value, onChange }) => {
-    return (
-        <div className='w-full rounded-lg border border-[#e5e7eb]'>
-            <div className='flex items-center gap-4 border-b border-[#e5e7eb] bg-[#f9fafb] px-4 py-2 text-[14px] text-[#374151]'>
-                <span className='cursor-default'>↩</span>
-                <span className='cursor-default'>↪</span>
-                <span className='cursor-default'>Normal text</span>
-                <span className='cursor-default'>≡</span>
-                <span className='cursor-default font-semibold'>B</span>
-                <span className='cursor-default italic'>I</span>
-                <span className='cursor-default underline'>U</span>
-            </div>
-            <textarea
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className='h-44 w-full resize-none rounded-b-lg bg-white px-4 py-3 text-[14px] text-primary placeholder:text-[#94a3b8] focus:outline-none'
-                placeholder='Type questions here..'
-            />
-        </div>
-    )
 }
 
 const Page = () => {
@@ -220,7 +206,9 @@ const Page = () => {
     const submitCurrentAnswer = async () => {
         if (!attemptId || !currentQuestion) return true
 
-        const answer = answers[currentQuestion._id]
+        const answer = currentQuestion.questionType === 'text'
+            ? stripHtml(answers[currentQuestion._id] || '')
+            : answers[currentQuestion._id]
         const hasAnswer =
             (Array.isArray(answer) && answer.length > 0) ||
             (typeof answer === 'string' && answer.trim()) ||
@@ -458,9 +446,12 @@ const Page = () => {
                             ) : null}
 
                             {currentQuestion.questionType === 'text' ? (
-                                <TextEditorPlaceholder
+                                <RichTextEditor
                                     value={typeof selectedAnswer === 'string' ? selectedAnswer : ''}
                                     onChange={(value) => handleTextChoice(currentQuestion._id, value)}
+                                    showToolbar
+                                    minHeight={176}
+                                    placeholder='Type your answer here..'
                                 />
                             ) : null}
                         </div>

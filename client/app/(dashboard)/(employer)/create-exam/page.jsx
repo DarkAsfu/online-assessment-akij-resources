@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import AddQuestionModal from '@/components/employer/create-exam/AddQuestionModal'
 import BasicInfoForm from '@/components/employer/create-exam/BasicInfoForm'
 import BasicInfoSummary from '@/components/employer/create-exam/BasicInfoSummary'
@@ -12,18 +12,50 @@ import QuestionsList from '@/components/employer/create-exam/QuestionsList'
 import examService from '@/services/examService'
 import questionSetService from '@/services/questionSetService'
 
+const mapStoredQuestionToForm = (question, index = 0) => {
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F']
+
+    if (question.questionType === 'text') {
+        return {
+            id: question._id || `${Date.now()}-${index}`,
+            type: 'text',
+            points: question.points || 1,
+            prompt: question.questionText || '',
+            options: [],
+            answerText: question.textAnswer || '',
+        }
+    }
+
+    return {
+        id: question._id || `${Date.now()}-${index}`,
+        type: question.questionType,
+        points: question.points || 1,
+        prompt: question.questionText || '',
+        options: (question.options || []).map((option, optionIndex) => ({
+            id: letters[optionIndex] || String.fromCharCode(65 + optionIndex),
+            text: option,
+            correct: (question.correctAnswers || []).includes(option),
+        })),
+        answerText: '',
+    }
+}
+
 const Page = () => {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const examIdParam = searchParams.get('examId')
     const [step, setStep] = useState(1)
     const [basicInfoCompleted, setBasicInfoCompleted] = useState(false)
     const [showBasicInfoForm, setShowBasicInfoForm] = useState(true)
     const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false)
     const [draftQuestions, setDraftQuestions] = useState([])
-    const [examId, setExamId] = useState(null)
+    const [examId, setExamId] = useState(examIdParam || null)
+    const [examStatus, setExamStatus] = useState('draft')
     const [questionSetId, setQuestionSetId] = useState(null)
     const [isSavingBasicInfo, setIsSavingBasicInfo] = useState(false)
     const [isSavingQuestions, setIsSavingQuestions] = useState(false)
     const [isSubmittingExam, setIsSubmittingExam] = useState(false)
+    const [isLoadingExam, setIsLoadingExam] = useState(Boolean(examIdParam))
     const [basicInfo, setBasicInfo] = useState({
         title: '',
         totalCandidates: '',
@@ -34,6 +66,55 @@ const Page = () => {
         startTime: '',
         endTime: '',
     })
+
+    useEffect(() => {
+        const loadExistingExam = async () => {
+            if (!examIdParam) {
+                setIsLoadingExam(false)
+                return
+            }
+
+            try {
+                setIsLoadingExam(true)
+                const response = await examService.getExamById(examIdParam)
+                const exam = response?.data
+
+                if (!exam) return
+
+                setExamId(exam._id)
+                setExamStatus(exam.status || 'draft')
+                setBasicInfoCompleted(true)
+                setShowBasicInfoForm(false)
+                setStep(2)
+                setBasicInfo({
+                    title: exam.title || '',
+                    totalCandidates: exam.totalCandidates || '',
+                    totalSlots: exam.totalSlots || '',
+                    totalQuestionSet: exam.questionSets?.length || '',
+                    durationPerSlot: exam.duration || '',
+                    questionType: exam.questionType || '',
+                    startTime: exam.startTime ? new Date(exam.startTime).toISOString().slice(0, 16) : '',
+                    endTime: exam.endTime ? new Date(exam.endTime).toISOString().slice(0, 16) : '',
+                })
+
+                const questionSets = Array.isArray(exam.questionSets) ? exam.questionSets : []
+                if (questionSets.length > 0) {
+                    setQuestionSetId(questionSets[0]._id || null)
+                    const existingQuestions = questionSets.flatMap((set) =>
+                        (set.questions || []).map((question, index) => mapStoredQuestionToForm(question, index))
+                    )
+                    setDraftQuestions(existingQuestions)
+                }
+            } catch (error) {
+                const message = error?.response?.data?.message || 'Failed to load exam'
+                toast.error(message)
+            } finally {
+                setIsLoadingExam(false)
+            }
+        }
+
+        loadExistingExam()
+    }, [examIdParam])
 
     const handleBasicInfoChange = (name, value) => {
         setBasicInfo((prev) => ({
@@ -80,8 +161,10 @@ const Page = () => {
             .then((response) => {
                 const createdOrUpdatedExamId = response?.data?._id || examId
                 setExamId(createdOrUpdatedExamId)
+                setExamStatus(response?.data?.status || 'draft')
                 setBasicInfoCompleted(true)
                 setShowBasicInfoForm(false)
+                setStep(2)
                 toast.success('Basic info saved')
             })
             .catch((error) => {
@@ -95,29 +178,29 @@ const Page = () => {
         setStep(2)
     }
 
-    const handleAddQuestion = (question) => {
+    const saveQuestionToServer = async (question) => {
         if (!examId) {
             toast.error('Save basic info first')
-            return
+            return false
         }
 
-        const mappedQuestion = 
+        const mappedQuestion =
             question.type === 'text'
                 ? {
-                    questionText: question.prompt,
-                    questionType: 'text',
-                    textAnswer: question.answerText,
-                    points: question.points,
-                }
+                      questionText: question.prompt,
+                      questionType: 'text',
+                      textAnswer: question.answerText,
+                      points: question.points,
+                  }
                 : {
-                    questionText: question.prompt,
-                    questionType: question.type,
-                    options: question.options.map((option) => option.text),
-                    correctAnswers: question.options
-                        .filter((option) => option.correct)
-                        .map((option) => option.text),
-                    points: question.points,
-                }
+                      questionText: question.prompt,
+                      questionType: question.type,
+                      options: question.options.map((option) => option.text),
+                      correctAnswers: question.options
+                          .filter((option) => option.correct)
+                          .map((option) => option.text),
+                      points: question.points,
+                  }
 
         const questionSetPayload = {
             title: `${basicInfo.title || 'Online Test'} Question Set`,
@@ -126,48 +209,50 @@ const Page = () => {
         }
 
         setIsSavingQuestions(true)
+        try {
+            let response
 
-        let request
+            if (questionSetId) {
+                response = await questionSetService.addQuestionToSet(questionSetId, mappedQuestion)
+            } else {
+                questionSetPayload.questions = [mappedQuestion]
+                response = await questionSetService.createQuestionSet(questionSetPayload)
+            }
 
-        if (questionSetId) {
-            // Add question to existing question set
-            request = questionSetService.addQuestionToSet(questionSetId, mappedQuestion)
-        } else {
-            // Create new question set with first question
-            questionSetPayload.questions = [mappedQuestion]
-            request = questionSetService.createQuestionSet(questionSetPayload)
-        }
+            if (!questionSetId) {
+                const newQuestionSetId = response?.data?.questionSet?._id || response?.data?._id || null
+                setQuestionSetId(newQuestionSetId)
 
-        request
-            .then((response) => {
-                if (!questionSetId) {
-                    const newQuestionSetId = response?.data?.questionSet?._id || response?.data?._id || null
-                    setQuestionSetId(newQuestionSetId)
-                    
-                    // Auto-publish exam after first question is added
-                    setIsSubmittingExam(true)
-                    return examService.publishExam(examId).then(() => {
-                        setDraftQuestions((prev) => [...prev, question])
-                        toast.success('Question added and exam published successfully!')
-                        setTimeout(() => {
-                            router.push('/')
-                        }, 1500)
-                    })
+                if (examStatus !== 'published') {
+                    await examService.publishExam(examId)
+                    setExamStatus('published')
                 }
-                
-                setDraftQuestions((prev) => [...prev, question])
-                toast.success('Question added')
-            })
-            .catch((error) => {
-                const message = error?.response?.data?.message || 'Failed to add question'
-                toast.error(message)
-            })
-            .finally(() => {
-                setIsSavingQuestions(false)
-                setIsSubmittingExam(false)
-            })
+            }
+
+            setDraftQuestions((prev) => [...prev, question])
+            toast.success(questionSetId ? 'Question added' : 'Question added')
+            return true
+        } catch (error) {
+            const message = error?.response?.data?.message || 'Failed to add question'
+            toast.error(message)
+            return false
+        } finally {
+            setIsSavingQuestions(false)
+            setIsSubmittingExam(false)
+        }
     }
 
+    const handleAddQuestion = async (question) => {
+        const saved = await saveQuestionToServer(question)
+        if (saved) {
+            setIsQuestionModalOpen(false)
+        }
+    }
+
+    const handleDeleteQuestion = (questionId) => {
+        setDraftQuestions((prev) => prev.filter((q) => q.id !== questionId))
+        toast.success('Question removed')
+    }
 
     const handleSubmitExam = () => {
         // This function is no longer needed as exams are auto-published
@@ -178,7 +263,13 @@ const Page = () => {
             <div className='mx-auto max-w-7xl space-y-4'>
                 <CreateExamHeader step={step} basicInfoCompleted={basicInfoCompleted} />
 
-                {step === 1 ? (
+                {isLoadingExam ? (
+                    <section className='rounded-2xl border border-[#eceff4] bg-white p-10 text-center'>
+                        <p className='text-[16px] text-[#64748b]'>Loading exam...</p>
+                    </section>
+                ) : null}
+
+                {!isLoadingExam && step === 1 ? (
                     <>
                         {showBasicInfoForm ? (
                             <BasicInfoForm formData={basicInfo} onChange={handleBasicInfoChange} />
@@ -195,10 +286,10 @@ const Page = () => {
                             isPrimaryLoading={isSavingBasicInfo}
                         />
                     </>
-                ) : (
+                ) : !isLoadingExam ? (
                     <>
                         {draftQuestions.length > 0 ? (
-                            <QuestionsList questions={draftQuestions} />
+                            <QuestionsList questions={draftQuestions} onDelete={handleDeleteQuestion} />
                         ) : (
                             <section className='rounded-2xl border border-[#eceff4] bg-white p-5 md:p-6 max-w-226.5 mx-auto'>
                                 <button
@@ -225,13 +316,14 @@ const Page = () => {
                             </section>
                         ) : null}
                     </>
-                )}
+                ) : null}
             </div>
 
             <AddQuestionModal
                 open={isQuestionModalOpen}
                 onClose={() => setIsQuestionModalOpen(false)}
                 onSave={handleAddQuestion}
+                onSaveAndAddMore={saveQuestionToServer}
             />
         </main>
     )

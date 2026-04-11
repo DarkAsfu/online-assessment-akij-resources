@@ -351,8 +351,27 @@ function calculateTimeRemaining(startTime, durationMinutes) {
   };
 }
 
+function normalizeAnswers(value) {
+  if (value === null || value === undefined) return [];
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter((item) => item.length > 0);
+  }
+
+  const normalized = String(value).trim();
+  return normalized ? [normalized] : [];
+}
+
 function arraysEqual(a, b) {
-  if (!a || !b) return false;
-  if (a.length !== b.length) return false;
-  return JSON.stringify(a.sort()) === JSON.stringify(b.sort());
+  const left = normalizeAnswers(a);
+  const right = normalizeAnswers(b);
+
+  if (left.length !== right.length) return false;
+
+  const sortedLeft = [...left].sort();
+  const sortedRight = [...right].sort();
+
+  return sortedLeft.every((item, index) => item === sortedRight[index]);
 }

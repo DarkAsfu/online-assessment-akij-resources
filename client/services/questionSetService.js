@@ -24,7 +24,7 @@ const questionSetService = {
   addQuestionToSet: async (id, question) => {
     // Fetch current question set
     const currentSet = await api.get(`/question-sets/${id}`)
-    const questions = currentSet?.data?.questions || []
+    const questions = currentSet?.data?.data?.questions || []
     
     // Add new question to questions array
     const updatedQuestions = [...questions, question]
