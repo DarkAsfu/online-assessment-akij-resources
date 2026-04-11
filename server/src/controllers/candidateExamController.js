@@ -8,14 +8,36 @@ const QuestionSet = require('../models/QuestionSet');
 // @access  Private (Candidate only)
 exports.startExam = async (req, res, next) => {
   try {
-    const candidateExam = await CandidateExam.findById(req.params.id)
+    let candidateExam = await CandidateExam.findById(req.params.id)
       .populate('exam');
-    
+
+    // Fallback: when client passes examId directly, auto-create candidate assignment
     if (!candidateExam) {
-      return res.status(404).json({
-        success: false,
-        message: 'Exam assignment not found',
-      });
+      const exam = await Exam.findById(req.params.id);
+
+      if (!exam) {
+        return res.status(404).json({
+          success: false,
+          message: 'Exam assignment not found',
+        });
+      }
+
+      let existingCandidateExam = await CandidateExam.findOne({
+        candidate: req.user.id,
+        exam: exam._id,
+      }).populate('exam');
+
+      if (!existingCandidateExam) {
+        existingCandidateExam = await CandidateExam.create({
+          candidate: req.user.id,
+          exam: exam._id,
+          status: 'assigned',
+        });
+        existingCandidateExam = await CandidateExam.findById(existingCandidateExam._id)
+          .populate('exam');
+      }
+
+      candidateExam = existingCandidateExam;
     }
     
     // Check if candidate is authorized
