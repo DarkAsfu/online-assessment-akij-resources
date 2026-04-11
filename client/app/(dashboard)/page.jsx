@@ -1,12 +1,22 @@
-import React from 'react';
+"use client"
 
-const page = () => {
-  return (
-    <div>
-      Welcome to Online assessment system
-      {/* conditionally render content based on user role or authentication status */}
-    </div>
-  );
-};
+import CandidateDashboard from '@/components/common/CandidateDashboard'
+import EmployerDashboard from '@/components/common/EmployerDashboard'
+import React from 'react'
+import { useSelector } from 'react-redux'
 
-export default page;
+const Page = () => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth)
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className='px-4 py-8 text-center text-primary'>
+        Welcome to Online assessment system please login to access your dashboard.
+      </div>
+    )
+  }
+
+  return user.role === 'employer' ? <EmployerDashboard /> : <CandidateDashboard />
+}
+
+export default Page
