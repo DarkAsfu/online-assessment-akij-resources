@@ -105,10 +105,15 @@ exports.updateQuestionSet = async (req, res, next) => {
       });
     }
     
-    questionSet = await QuestionSet.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    // Update fields directly on the document
+    Object.assign(questionSet, req.body);
+    
+    // Recalculate totalQuestions and totalPoints
+    questionSet.totalQuestions = questionSet.questions.length;
+    questionSet.totalPoints = questionSet.questions.reduce((sum, q) => sum + q.points, 0);
+    
+    // Save to trigger pre-save hook and validators
+    questionSet = await questionSet.save();
     
     res.status(200).json({
       success: true,

@@ -143,7 +143,7 @@ const BasicInfoForm = ({ formData, onChange }) => {
             </div>
           </div>
           <div>
-            <label className={labelClass}>Duration</label>
+            <label className={labelClass}>Duration (minutes)</label>
             <input
               name='durationPerSlot'
               type='number'
@@ -154,6 +154,39 @@ const BasicInfoForm = ({ formData, onChange }) => {
               onChange={handleInputChange}
             />
           </div>
+        </div>
+
+        <div className='grid gap-4 md:grid-cols-2'>
+          <div>
+            <label className={labelClass}>Negative Marking</label>
+            <div className='relative'>
+              <select
+                name='negativeMarking'
+                className={`${inputClass} appearance-none`}
+                value={formData.negativeMarking || 'no'}
+                onChange={handleInputChange}
+              >
+                <option value='no'>No</option>
+                <option value='yes'>Yes</option>
+              </select>
+              <ChevronDown className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]' size={20} />
+            </div>
+          </div>
+          {formData.negativeMarking === 'yes' && (
+            <div>
+              <label className={labelClass}>Negative Marking Value</label>
+              <input
+                name='negativeMarkingValue'
+                type='number'
+                min='0'
+                step='0.5'
+                className={inputClass}
+                placeholder='e.g., 0.5'
+                value={formData.negativeMarkingValue || ''}
+                onChange={handleInputChange}
+              />
+            </div>
+          )}
         </div>
       </div>
     </section>

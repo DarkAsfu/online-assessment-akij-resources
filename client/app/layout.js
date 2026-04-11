@@ -19,7 +19,9 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <ReduxProvider>
           <Navbar/>
-          {children}
+          <div style={{ minHeight: '90vh' }}>
+            {children}
+          </div>
           <Footer/>
           <Toaster position="top-right" />
         </ReduxProvider>

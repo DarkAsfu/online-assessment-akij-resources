@@ -56,6 +56,7 @@ const Page = () => {
     const [isSavingQuestions, setIsSavingQuestions] = useState(false)
     const [isSubmittingExam, setIsSubmittingExam] = useState(false)
     const [isLoadingExam, setIsLoadingExam] = useState(Boolean(examIdParam))
+    const [editingQuestionId, setEditingQuestionId] = useState(null)
     const [basicInfo, setBasicInfo] = useState({
         title: '',
         totalCandidates: '',
@@ -65,6 +66,8 @@ const Page = () => {
         questionType: '',
         startTime: '',
         endTime: '',
+        negativeMarking: 'no',
+        negativeMarkingValue: '',
     })
 
     useEffect(() => {
@@ -95,6 +98,8 @@ const Page = () => {
                     questionType: exam.questionType || '',
                     startTime: exam.startTime ? new Date(exam.startTime).toISOString().slice(0, 16) : '',
                     endTime: exam.endTime ? new Date(exam.endTime).toISOString().slice(0, 16) : '',
+                    negativeMarking: exam.negativeMarking ? 'yes' : 'no',
+                    negativeMarkingValue: exam.negativeMarkingValue || '',
                 })
 
                 const questionSets = Array.isArray(exam.questionSets) ? exam.questionSets : []
@@ -147,8 +152,8 @@ const Page = () => {
             startTime: new Date(basicInfo.startTime).toISOString(),
             endTime: new Date(basicInfo.endTime).toISOString(),
             duration: Number(basicInfo.durationPerSlot),
-            negativeMarking: false,
-            negativeMarkingValue: 0,
+            negativeMarking: basicInfo.negativeMarking === 'yes',
+            negativeMarkingValue: basicInfo.negativeMarking === 'yes' ? Number(basicInfo.negativeMarkingValue || 0) : 0,
         }
 
         setIsSavingBasicInfo(true)
@@ -243,15 +248,98 @@ const Page = () => {
     }
 
     const handleAddQuestion = async (question) => {
-        const saved = await saveQuestionToServer(question)
-        if (saved) {
+        if (editingQuestionId) {
+            // Update existing question
+            const updatedQuestions = draftQuestions.map((q) => (q.id === editingQuestionId ? question : q))
+            setDraftQuestions(updatedQuestions)
+            
+            // Check if this is a server question (MongoDB ID: 24-char hex string)
+            const isServerQuestion = String(editingQuestionId).length === 24 && /^[0-9a-f]+$/i.test(String(editingQuestionId))
+            
+            // If this is a server question, also update on the server
+            if (questionSetId && isServerQuestion) {
+                try {
+                    const serverQuestions = updatedQuestions.map((q) => ({
+                        questionText: q.prompt,
+                        questionType: q.type,
+                        options: q.options.map((option) => option.text),
+                        correctAnswers: q.options
+                            .filter((option) => option.correct)
+                            .map((option) => option.text),
+                        textAnswer: q.answerText,
+                        points: q.points,
+                    }))
+                    
+                    await questionSetService.updateQuestionSet(questionSetId, {
+                        questions: serverQuestions,
+                    })
+                } catch (error) {
+                    toast.error('Failed to update question on server')
+                }
+            }
+            
+            toast.success('Question updated')
+            setEditingQuestionId(null)
             setIsQuestionModalOpen(false)
+        } else {
+            // Add new question
+            const saved = await saveQuestionToServer(question)
+            if (saved) {
+                setIsQuestionModalOpen(false)
+            }
         }
     }
 
-    const handleDeleteQuestion = (questionId) => {
-        setDraftQuestions((prev) => prev.filter((q) => q.id !== questionId))
-        toast.success('Question removed')
+    const handleEditQuestion = (questionId) => {
+        setEditingQuestionId(questionId)
+        setIsQuestionModalOpen(true)
+    }
+
+    const handleDeleteQuestion = async (questionId) => {
+        try {
+            setIsSavingQuestions(true)
+            
+            // Find the question to get its index
+            const questionIndex = draftQuestions.findIndex((q) => q.id === questionId)
+            if (questionIndex === -1) {
+                toast.error('Question not found')
+                return
+            }
+
+            // Check if this is a server question (MongoDB ID: 24-char hex string)
+            const isServerQuestion = String(questionId).length === 24 && /^[0-9a-f]+$/i.test(String(questionId))
+            
+            // If it's a server question, need to delete from server as well
+            if (isServerQuestion && questionSetId) {
+                // Filter out the question from the questions array
+                const updatedQuestions = draftQuestions
+                    .filter((q) => q.id !== questionId)
+                    .map((q) => ({
+                        questionText: q.prompt,
+                        questionType: q.type,
+                        options: q.options.map((option) => option.text),
+                        correctAnswers: q.options
+                            .filter((option) => option.correct)
+                            .map((option) => option.text),
+                        textAnswer: q.answerText,
+                        points: q.points,
+                    }))
+
+                // Update the question set on server
+                await questionSetService.updateQuestionSet(questionSetId, {
+                    questions: updatedQuestions,
+                })
+            }
+
+            // Update local state
+            setDraftQuestions((prev) => prev.filter((q) => q.id !== questionId))
+            toast.success('Question removed')
+        } catch (error) {
+            const message = error?.response?.data?.message || 'Failed to delete question'
+            toast.error(message)
+        } finally {
+            setIsSavingQuestions(false)
+        }
     }
 
     const handleSubmitExam = () => {
@@ -289,7 +377,7 @@ const Page = () => {
                 ) : !isLoadingExam ? (
                     <>
                         {draftQuestions.length > 0 ? (
-                            <QuestionsList questions={draftQuestions} onDelete={handleDeleteQuestion} />
+                            <QuestionsList questions={draftQuestions} onEdit={handleEditQuestion} onDelete={handleDeleteQuestion} />
                         ) : (
                             <section className='rounded-2xl border border-[#eceff4] bg-white p-5 md:p-6 max-w-226.5 mx-auto'>
                                 <button
@@ -321,9 +409,13 @@ const Page = () => {
 
             <AddQuestionModal
                 open={isQuestionModalOpen}
-                onClose={() => setIsQuestionModalOpen(false)}
+                onClose={() => {
+                    setIsQuestionModalOpen(false)
+                    setEditingQuestionId(null)
+                }}
                 onSave={handleAddQuestion}
                 onSaveAndAddMore={saveQuestionToServer}
+                editingQuestion={editingQuestionId ? draftQuestions.find((q) => q.id === editingQuestionId) : null}
             />
         </main>
     )

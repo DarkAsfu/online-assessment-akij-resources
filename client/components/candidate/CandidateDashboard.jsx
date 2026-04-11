@@ -51,8 +51,14 @@ const CandidateDashboard = () => {
         )
     }
 
-    const handleStart = (examId) => {
-        router.push(`/exam/${examId}`)
+    const handleStart = (test) => {
+        if (test.hasTaken && test.attemptId) {
+            // Navigate to results if they've already taken the exam
+            router.push(`/exam/${test._id}/results/${test.attemptId}`)
+        } else if (test.canTakeNow) {
+            // Navigate to exam if they can take it now
+            router.push(`/exam/${test._id}`)
+        }
     }
 
     return (
@@ -128,11 +134,17 @@ const CandidateDashboard = () => {
 
                                 <button
                                     type='button'
-                                    onClick={() => handleStart(test._id)}
-                                    disabled={!test.canTakeNow}
+                                    onClick={() => handleStart(test)}
+                                    disabled={!test.canTakeNow && !test.hasTaken}
                                     className='w-35 rounded-xl border border-[#6633ff] px-6 py-2.5 text-[14px] font-semibold leading-[1.4] text-[#6633ff] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50'
                                 >
-                                    {test.canTakeNow ? 'Start' : 'Unavailable'}
+                                    {test.canTakeNow
+                                        ? 'Start'
+                                        : test.hasTaken
+                                            ? 'Completed'
+                                            : test.isUpcoming
+                                                ? 'Upcoming'
+                                                : 'Unavailable'}
                                 </button>
                             </div>
                         </article>

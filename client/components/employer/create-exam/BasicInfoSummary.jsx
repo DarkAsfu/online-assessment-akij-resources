@@ -36,8 +36,12 @@ const BasicInfoSummary = ({ data, onEdit }) => {
         <SummaryItem label='Duration Per Slots (Minutes)' value={data.durationPerSlot} />
       </div>
 
-      <div className='mt-4'>
+      <div className='mt-4 grid gap-4 md:grid-cols-2'>
         <SummaryItem label='Question Type' value={data.questionType} />
+        <SummaryItem 
+          label='Negative Marking' 
+          value={data.negativeMarking === 'yes' ? `Yes (${data.negativeMarkingValue} per wrong)` : 'No'} 
+        />
       </div>
     </section>
   )

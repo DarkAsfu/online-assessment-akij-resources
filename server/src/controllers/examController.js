@@ -230,14 +230,10 @@ exports.getAllCandidateExams = async (req, res, next) => {
       })
     );
     
-    const availableExams = examsWithStatus.filter(
-      exam => !exam.isFull && !exam.hasTaken
-    );
-    
     res.status(200).json({
       success: true,
-      count: availableExams.length,
-      data: availableExams,
+      count: examsWithStatus.length,
+      data: examsWithStatus,
     });
   } catch (error) {
     next(error);

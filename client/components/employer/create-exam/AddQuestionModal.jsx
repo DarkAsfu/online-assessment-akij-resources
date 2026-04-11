@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { X, Trash2 } from 'lucide-react'
 import RichTextEditor from '@/components/common/RichTextEditor'
 
@@ -9,7 +9,7 @@ const sanitizeEditorText = (value = '') =>
     .replace(/\s+/g, ' ')
     .trim()
 
-const AddQuestionModal = ({ open, onClose, onSave, onSaveAndAddMore }) => {
+const AddQuestionModal = ({ open, onClose, onSave, onSaveAndAddMore, editingQuestion }) => {
   const [type, setType] = useState('radio')
   const [points, setPoints] = useState('1')
   const [prompt, setPrompt] = useState('')
@@ -18,8 +18,32 @@ const AddQuestionModal = ({ open, onClose, onSave, onSaveAndAddMore }) => {
   const [correctAnswers, setCorrectAnswers] = useState([])
   const [answerText, setAnswerText] = useState('')
 
+  const isEditing = !!editingQuestion
   const isOptionBased = useMemo(() => type === 'radio' || type === 'checkbox', [type])
   const optionIds = useMemo(() => Array.from({ length: numberOfOptions }, (_, i) => String.fromCharCode(65 + i)), [numberOfOptions])
+
+  // Load editing question data
+  useEffect(() => {
+    if (editingQuestion && open) {
+      setType(editingQuestion.type || 'radio')
+      setPoints(String(editingQuestion.points || 1))
+      setPrompt(editingQuestion.prompt || '')
+      setAnswerText(editingQuestion.answerText || '')
+      
+      if (editingQuestion.options && editingQuestion.options.length > 0) {
+        setNumberOfOptions(editingQuestion.options.length)
+        const optionsMap = {}
+        const correctIds = []
+        editingQuestion.options.forEach((option, index) => {
+          const id = String.fromCharCode(65 + index)
+          optionsMap[id] = option.text
+          if (option.correct) correctIds.push(id)
+        })
+        setOptions(optionsMap)
+        setCorrectAnswers(correctIds)
+      }
+    }
+  }, [editingQuestion, open])
 
   if (!open) return null
 
@@ -52,7 +76,7 @@ const AddQuestionModal = ({ open, onClose, onSave, onSaveAndAddMore }) => {
     if (!promptText) return
 
     const question = {
-      id: Date.now(),
+      id: editingQuestion?.id || Date.now(),
       type,
       points: Number(points) || 1,
       prompt: promptText,
@@ -90,7 +114,7 @@ const AddQuestionModal = ({ open, onClose, onSave, onSaveAndAddMore }) => {
   const handleSaveAndAddMore = () => {
     const question = buildQuestionPayload()
     if (!question) return
-    if (onSaveAndAddMore) {
+    if (onSaveAndAddMore && !isEditing) {
       onSaveAndAddMore(question)
     } else {
       onSave(question)
@@ -233,15 +257,17 @@ const AddQuestionModal = ({ open, onClose, onSave, onSaveAndAddMore }) => {
             onClick={handleSave}
             className='h-11 rounded-lg border-2 border-[#633CFF] px-6 text-[16px] font-semibold text-[#633CFF] cursor-pointer hover:bg-[#633CFF]/10'
           >
-            Save
+            {isEditing ? 'Update' : 'Save'}
           </button>
-          <button
-            type='button'
-            onClick={handleSaveAndAddMore}
-            className='h-11 rounded-lg bg-[#633CFF] px-6 text-[16px] font-semibold text-white cursor-pointer hover:bg-[#5028d9]'
-          >
-            Save & Add More
-          </button>
+          {!isEditing && (
+            <button
+              type='button'
+              onClick={handleSaveAndAddMore}
+              className='h-11 rounded-lg bg-[#633CFF] px-6 text-[16px] font-semibold text-white cursor-pointer hover:bg-[#5028d9]'
+            >
+              Save & Add More
+            </button>
+          )}
         </div>
       </div>
     </div>
