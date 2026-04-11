@@ -1,7 +1,7 @@
 "use client"
 
-import CandidateDashboard from '@/components/common/CandidateDashboard'
-import EmployerDashboard from '@/components/common/EmployerDashboard'
+import CandidateDashboard from '@/components/candidate/CandidateDashboard'
+import EmployerDashboard from '@/components/employer/EmployerDashboard'
 import React from 'react'
 import { useSelector } from 'react-redux'
 
