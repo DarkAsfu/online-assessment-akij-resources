@@ -2,6 +2,41 @@
 
 A comprehensive online assessment platform that enables employers to create and manage online exams while allowing candidates to take exams in a secure, proctored environment.
 
+---
+
+## 🎯 Live Demo & Recording
+
+- **🌐 Live Demo**: [Add your live demo URL here]
+- **📹 Video Recording**: [Add your video recording URL here]
+
+---
+
+## 📑 Table of Contents
+
+1. [Features](#-features)
+2. [Setup Instructions](#-setup-instructions)
+3. [Project Structure](#-project-structure)
+4. [API Endpoints](#-api-endpoints)
+5. [Database Schema](#-database-schema)
+6. [Authentication & Security](#-authentication--security)
+7. [Additional Questions](#-additional-questions)
+   - [MCP Integration](#1-mcp-model-context-protocol-integration)
+   - [AI Tools for Development](#2-ai-tools-for-development)
+   - [Offline Mode](#3-offline-mode-implementation)
+8. [Technology Stack](#-technology-stack)
+9. [Deployment](#-deployment)
+10. [Future Enhancements](#-future-enhancements)
+11. [GitHub Repository](#-github-repository)
+12. [What Was Accomplished](#-what-was-accomplished-in-this-project)
+13. [Project Statistics](#-project-statistics)
+14. [Bonus Points](#-bonus-points-achieved)
+15. [Contributing](#-contributing)
+16. [License](#-license)
+17. [Support](#-support)
+18. [Acknowledgments](#-acknowledgments)
+
+---
+
 ## 🚀 Features
 
 ### For Employers
@@ -91,8 +126,8 @@ The frontend will run on `http://localhost:3000`
 
 #### 4. Access the Application
 
-- **Employer Dashboard**: `http://localhost:3000/dashboard` (after login as employer)
-- **Candidate Dashboard**: `http://localhost:3000/dashboard` (after login as candidate)
+- **Employer Dashboard**: `http://localhost:3000/` (after login as employer)
+- **Candidate Dashboard**: `http://localhost:3000/` (after login as candidate)
 - **Create Exam**: `http://localhost:3000/create-exam`
 - **Take Exam**: `http://localhost:3000/exam/:examId`
 
@@ -448,11 +483,11 @@ export class OfflineExamManager {
 
 This project is hosted on GitHub for version control and collaboration.
 
-**Repository URL**: [Add your GitHub repository link here]
+**Repository URL**: https://github.com/DarkAsfu/online-assessment-akij-resources
 
 ### Cloning the Repository
 ```bash
-git clone https://github.com/yourusername/akij-ibos.git
+git clone https://github.com/DarkAsfu/online-assessment-akij-resources.git
 cd akij-ibos
 ```
 
@@ -616,24 +651,6 @@ cd akij-ibos
 
 ---
 
-## 🎬 Demo & Recording
-
-### Live Demo Link
-[Add your live demo URL here - e.g. https://akij-ibos.vercel.app]
-
-### Video Recording
-[Add your video recording link here - YouTube, Google Drive, etc.]
-
-**Video Contents Should Show**:
-1. ✅ Employer creating an exam
-2. ✅ Adding questions with rich text
-3. ✅ Setting negative marking
-4. ✅ Publishing exam
-5. ✅ Candidate taking exam
-6. ✅ Submitting and viewing results
-7. ✅ Exam persisting after submission
-8. ✅ Feature highlights and edge cases
-
 ---
 
 ## 🏆 Bonus Points Achieved
@@ -658,29 +675,49 @@ cd akij-ibos
 
 ---
 
-### Frontend
-- **Framework**: Next.js 13+ (App Router)
-- **UI Library**: React 18
-- **Styling**: TailwindCSS
-- **State Management**: Redux Toolkit
-- **HTTP Client**: Axios
-- **Icons**: Lucide React
-- **Editor**: ContentEditable (Rich Text Editor)
-- **Toast Notifications**: React Hot Toast
+### Frontend Dependencies
+- **Framework**: Next.js `16.2.3` (App Router)
+- **React**: `19.2.4` with React DOM `19.2.4`
+- **Styling**: TailwindCSS `4.0.0` with PostCSS `4.0.0`
+- **State Management**: Redux Toolkit `^2.11.2` with React Redux `^9.2.0`
+- **HTTP Client**: Axios `^1.15.0`
+- **Icons**: Lucide React `^1.8.0`
+- **Forms**: React Hook Form `^7.72.1` with Resolvers `^5.2.2`
+- **Editor**: ContentEditable (Rich Text Editor) - Custom implementation
+- **Toast Notifications**: React Hot Toast `^2.6.0`
+- **Utilities**:
+  - date-fns `^4.1.0`
+  - clsx `^2.1.1`
+  - tailwind-merge `^3.5.0`
+  - class-variance-authority `^0.7.1`
+  - yup `^1.7.1`
+- **UI Components**: Radix UI `^1.4.3`, shadcn `^4.2.0`
+- **Icons Extended**: HugeIcons React `^1.1.6`
 
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB with Mongoose
-- **Authentication**: JWT (jsonwebtoken)
-- **Password Hashing**: bcryptjs
-- **Validation**: Custom validation middleware
+### Backend Dependencies
+- **Runtime**: Node.js (CommonJS)
+- **Framework**: Express.js `^5.2.1`
+- **Database**: 
+  - MongoDB `^7.1.1` (driver)
+  - Mongoose `^9.4.1` (ODM)
+- **Authentication**: jsonwebtoken `^9.0.3`
+- **Security**:
+  - bcryptjs `^3.0.3` (password hashing)
+  - cors `^2.8.6` (Cross-Origin Resource Sharing)
+  - express-rate-limit `^8.3.2` (rate limiting)
+  - validator `^13.15.35` (input validation)
+- **Middleware**: express-validator `^7.3.2`
+- **Environment**: dotenv `^17.4.1`
+- **Development**: 
+  - nodemon `^3.1.14` (auto-reload)
 
-### DevTools
-- **Git**: Version control
-- **AI Assistants**: GitHub Copilot, Claude
+### DevTools & Build Setup
+- **Version Control**: Git
 - **Package Manager**: npm
-- **Dev Environment**: VS Code
+- **Linting**: ESLint `9.x` with Next.js config
+- **AI Assistants**: GitHub Copilot, Claude
+- **IDE**: VS Code
+- **DevOps**: Docker-ready (can be containerized)
 
 ---
 
