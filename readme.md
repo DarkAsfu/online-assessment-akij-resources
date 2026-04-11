@@ -11,29 +11,42 @@ A comprehensive online assessment platform that enables employers to create and 
 
 ---
 
+## 🔐 Demo Credentials
+
+### Employer
+- **Email**: ashrafulislamdev01@gmail.com
+- **Password**: password123
+
+### Candidate
+- **Email**: naimurrahman@gmail.com
+- **Password**: password123
+
+---
+
 ## 📑 Table of Contents
 
-1. [Features](#-features)
-2. [Setup Instructions](#-setup-instructions)
-3. [Project Structure](#-project-structure)
-4. [API Endpoints](#-api-endpoints)
-5. [Database Schema](#-database-schema)
-6. [Authentication & Security](#-authentication--security)
-7. [Additional Questions](#-additional-questions)
+1. [Demo Credentials](#-demo-credentials)
+2. [Features](#-features)
+3. [Setup Instructions](#-setup-instructions)
+4. [Project Structure](#-project-structure)
+5. [API Endpoints](#-api-endpoints)
+6. [Database Schema](#-database-schema)
+7. [Authentication & Security](#-authentication--security)
+8. [Additional Questions](#-additional-questions)
    - [MCP Integration](#1-mcp-model-context-protocol-integration)
    - [AI Tools for Development](#2-ai-tools-for-development)
    - [Offline Mode](#3-offline-mode-implementation)
-8. [Technology Stack](#-technology-stack)
-9. [Deployment](#-deployment)
-10. [Future Enhancements](#-future-enhancements)
-11. [GitHub Repository](#-github-repository)
-12. [What Was Accomplished](#-what-was-accomplished-in-this-project)
-13. [Project Statistics](#-project-statistics)
-14. [Bonus Points](#-bonus-points-achieved)
-15. [Contributing](#-contributing)
-16. [License](#-license)
-17. [Support](#-support)
-18. [Acknowledgments](#-acknowledgments)
+9. [Technology Stack](#-technology-stack)
+10. [Deployment](#-deployment)
+11. [Future Enhancements](#-future-enhancements)
+12. [GitHub Repository](#-github-repository)
+13. [What Was Accomplished](#-what-was-accomplished-in-this-project)
+14. [Project Statistics](#-project-statistics)
+15. [Bonus Points](#-bonus-points-achieved)
+16. [Contributing](#-contributing)
+17. [License](#-license)
+18. [Support](#-support)
+19. [Acknowledgments](#-acknowledgments)
 
 ---
 
